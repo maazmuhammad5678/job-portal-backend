@@ -49,37 +49,31 @@ async function createJobs(req, res) {
 }
 
 // Get all jobs and search jobs
+
 async function getJobs(req, res) {
     try {
         const { search, location, jobType } = req.query;
 
         const filter = {};
 
+        // Search by title, company, or description
         if (search) {
-            const escapedSearch = search.replace(
-                /[.*+?^${}()|[\]\\]/g,
-                "\\$&"
-            );
-
-            
-
             filter.$or = [
-                { title: { $regex: escapedSearch, $options: "i" } },
-                { company: { $regex: escapedSearch, $options: "i" } },
-                { description: { $regex: escapedSearch, $options: "i" } }
+                { title: { $regex: search, $options: "i" } },
+                { company: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } }
             ];
         }
 
+        // Filter by location
         if (location) {
             filter.location = {
-                $regex: location.replace(
-                    /[.*+?^${}()|[\]\\]/g,
-                    "\\$&"
-                ),
+                $regex: location,
                 $options: "i"
             };
         }
 
+        // Filter by job type
         if (jobType) {
             filter.jobType = jobType;
         }
@@ -88,19 +82,20 @@ async function getJobs(req, res) {
             .populate("employer", "name email")
             .sort({ createdAt: -1 });
 
-        
-
         return res.status(200).json({
             count: jobs.length,
             jobs
         });
+
     } catch (error) {
+        console.error("Get Jobs Error:", error);
+
         return res.status(500).json({
-            message: "Failed to fetch jobs"
-        },console.log(error));
+            message: "Failed to fetch jobs",
+            error: error.message
+        });
     }
 }
-
 // Get a single job
 async function getJobById(req, res) {
     try {

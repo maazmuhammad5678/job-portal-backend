@@ -57,6 +57,7 @@ async function signup(req, res) {
             });
         }
 
+        console.log(error);
         return res.status(500).json({
             message: "Signup failed"
         });
